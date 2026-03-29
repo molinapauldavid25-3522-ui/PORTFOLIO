@@ -1,0 +1,336 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:black;
+color:white;
+font-family:'Playfair Display', serif;
+}
+
+body.no-scroll {
+overflow: hidden;
+height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+/* HEADER */
+
+header{
+background:white;
+color:black;
+padding:15px;
+text-align:center;
+font-weight:bold;
+letter-spacing:2px;
+}
+
+/* HERO */
+
+.hero{
+flex: 1;
+display:flex;
+justify-content:center;
+align-items:center;
+text-align:center;
+}
+
+/* GLOW TITLE */
+
+.hero h1{
+font-size:4rem;
+letter-spacing:6px;
+}
+
+.hero h1 span {
+display: inline-block;
+transition: transform 0.2s ease, text-shadow 0.2s ease;
+text-shadow:
+0 0 5px white,
+0 0 10px white,
+0 0 20px white,
+0 0 40px white;
+cursor: default;
+}
+
+.hero h1 span:hover {
+transform: scale(1.4) translateY(-5px);
+text-shadow:
+0 0 10px white,
+0 0 20px white,
+0 0 40px white,
+0 0 100px white;
+position: relative;
+z-index: 10;
+}
+
+/* SECTIONS */
+
+section{
+padding:80px 10%;
+}
+
+h2{
+margin-bottom:30px;
+font-size:2rem;
+border-bottom:1px solid white;
+display:inline-block;
+}
+
+/* GALLERY (Horizontal Overlapping Deck) */
+
+.gallery {
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
+margin-top: 30px;
+padding: 40px 10px;
+}
+
+.gallery img {
+width: 300px; /* Standard width for consistent cards */
+height: auto; /* Native aspect ratio completely intact */
+margin-left: -200px; /* Highly compressed horizontal overlap */
+display: inline-block;
+filter: grayscale(100%);
+opacity: 0;
+transform: translateY(30px);
+transition: opacity 1s, filter 0.4s, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s;
+border-radius: 12px;
+border: 2px solid white; /* A crisp white border really sells the 'photo card' look */
+box-shadow: -10px 0 20px rgba(0,0,0,0.7); /* Deep shadow to separate overlapping cards */
+cursor: pointer;
+position: relative;
+}
+
+/* Ensure the first image doesn't get clipped into the margin */
+.gallery img:first-child {
+margin-left: 0;
+}
+
+.gallery img.show{
+opacity:1;
+transform:translateY(0);
+}
+
+.gallery img.show:hover{
+transform: scale(1.1) translateY(-20px) rotate(2deg); /* Pops up and tilts slightly */
+filter:grayscale(0%);
+box-shadow: 0 20px 40px rgba(255,255,255,0.3), -10px 0 20px rgba(0,0,0,0.7);
+z-index: 100; /* Bring hovered card strictly to the front */
+}
+
+/* FOOTER */
+
+footer{
+background:white;
+color:black;
+padding:20px 5%;
+font-weight:bold;
+}
+
+.footer-content {
+display: flex;
+justify-content: flex-start;
+gap: 15px;
+align-items: center;
+width: 100%;
+}
+
+.social-icon {
+color: #3b5998;
+font-size: 1.5rem;
+text-decoration: none;
+transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+transform: scale(1.1);
+}
+
+/* SIDE MENU */
+
+.side-menu {
+position: absolute;
+top: 30px;
+left: 30px;
+z-index: 100;
+}
+
+.menu-icon {
+font-size: 2rem;
+color: white;
+cursor: pointer;
+padding: 10px;
+transition: text-shadow 0.3s ease;
+}
+
+.menu-icon:hover {
+text-shadow: 0 0 10px white, 0 0 20px white;
+}
+
+.nav-links {
+list-style: none;
+opacity: 0;
+visibility: hidden;
+position: absolute;
+left: 50px;
+top: 0;
+background: rgba(0, 0, 0, 0.85);
+padding: 25px 30px;
+border-left: 2px solid white;
+border-radius: 0 10px 10px 0;
+box-shadow: 5px 5px 20px rgba(0,0,0,0.7);
+transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+min-width: 200px;
+transform: translateX(-20px);
+}
+
+.side-menu:hover .nav-links,
+.nav-links:hover {
+opacity: 1;
+visibility: visible;
+transform: translateX(0);
+}
+
+.nav-links > li {
+margin-bottom: 20px;
+position: relative;
+}
+
+.nav-links > li:last-child {
+margin-bottom: 0;
+}
+
+.nav-links a {
+color: white;
+text-decoration: none;
+font-size: 1.2rem;
+text-transform: uppercase;
+letter-spacing: 2px;
+transition: all 0.2s;
+display: flex;
+align-items: center;
+}
+
+.nav-links a:hover {
+text-shadow: 0 0 10px white;
+transform: translateX(5px);
+}
+
+/* SUBMENU */
+.submenu {
+list-style: none;
+background: rgba(255, 255, 255, 0.1);
+border-left: 1px solid white;
+border-radius: 5px;
+max-height: 0;
+overflow: hidden;
+opacity: 0;
+transition: all 0.4s ease;
+margin-left: 15px;
+margin-top: 5px;
+}
+
+.has-submenu:hover .submenu {
+max-height: 250px;
+padding: 10px 15px;
+opacity: 1;
+}
+
+.submenu li {
+margin-bottom: 12px;
+}
+
+.submenu li:last-child {
+margin-bottom: 0;
+}
+
+.submenu a {
+font-size: 1rem;
+letter-spacing: 1px;
+color: #ddd;
+}
+
+/* SUB-FOLDERS DISPLAY */
+h3.sub-folder-title {
+    font-size: 2rem;
+    letter-spacing: 3px;
+    margin-top: 50px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px white, 0 0 10px rgba(255,255,255,0.3);
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    display: inline-block;
+}
+
+.sub-gallery {
+    margin-top: 0;
+    padding-top: 20px;
+}
+
+/* RESPONSIVE DESIGN FOR MOBILE */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2.5rem;
+    letter-spacing: 3px;
+    padding: 0 15px;
+  }
+  
+  section {
+    padding: 40px 5%;
+  }
+
+  /* Make gallery overlapping scale down appropriately on tablets/mobile */
+  .gallery {
+    padding: 20px 5px;
+  }
+  
+  .gallery img {
+    width: 200px;
+    margin-left: -130px; 
+    transform: translateY(15px);
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .nav-links {
+    min-width: 150px;
+    padding: 20px;
+    left: 45px;
+  }
+  
+  .nav-links a {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 2rem;
+    letter-spacing: 2px;
+  }
+  
+  .gallery img {
+    width: 150px;
+    margin-left: -90px;
+  }
+
+  .nav-links {
+    min-width: 140px;
+    left: 40px;
+    padding: 15px;
+  }
+
+  .nav-links a {
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concert Shoots - LENTE NI  PAUL</title>
+
+<!-- Included existing stylesheets to match the aesthetic -->
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* 
+==================================================
+CHANGE YOUR BACKGROUND IMAGE HERE
+==================================================
+Replace 'your-image-here.jpg' with the exact name and path 
+to your photo. (e.g. 'images/concert1.jpg') 
+*/
+body.concert-bg {
+    background-image: url('images/your-image-here.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Adds a nice parallax scroll effect */
+    min-height: 100vh;
+    overflow-y: auto; /* Allows scrolling */
+    
+    /* Overrides the flexbox behavior from the landing page */
+    display: block; 
+}
+
+/* A dark overlay to make sure the white glowing text is perfectly readable over any photo */
+.overlay {
+    background: rgba(0, 0, 0, 0.6); 
+    min-height: 100vh;
+}
+
+/* Smooth back button */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 30px;
+    transition: text-shadow 0.3s ease, transform 0.3s ease;
+}
+.back-btn:hover {
+    text-shadow: 0 0 10px white, 0 0 20px white;
+    transform: translateX(-5px);
+}
+
+/* Page titles */
+section.inner-page {
+    padding-top: 10px;
+    text-align: center;
+}
+.inner-page h2 {
+    font-size: 3rem;
+    letter-spacing: 5px;
+    text-shadow: 0 0 10px white, 0 0 20px white;
+    border-bottom: none;
+    margin-bottom: 50px;
+}
+</style>
+
+</head>
+
+<body class="concert-bg">
+
+<!-- The overlay darkens the background photo slightly so the text stands out -->
+<div class="overlay">
+
+    <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    
+    <section class="inner-page">
+        <h2>CONCERT SHOOTS</h2>
+        
+        <div class="gallery" id="concert-shoots-gallery">
+            <!-- General concert photos here -->
+        </div>
+
+    </section>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>

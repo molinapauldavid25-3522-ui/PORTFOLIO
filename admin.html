@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Cloud Sync</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+body{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+flex-direction: column;
+padding: 20px;
+}
+.admin-panel{
+width:100%;
+max-width:400px;
+border:1px solid white;
+padding:30px;
+}
+.admin-panel h2{ margin-bottom:20px; }
+.admin-panel select,
+.admin-panel input,
+.admin-panel button{
+width:100%; padding:10px; margin-bottom:15px;
+background:black; color:white; border:1px solid white;
+}
+button{ cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="admin-panel">
+<h2>Create Sub-Folder</h2>
+<select id="parentCategory">
+<option value="concert-shoots">Concert Shoots</option>
+<option value="wedding">Wedding</option>
+<option value="birthday">Birthday</option>
+<option value="christening">Christening</option>
+<option value="prenup">Pre Nup</option>
+<option value="preshoot">Pre Shoot</option>
+<option value="portraits">Portraits</option>
+<option value="brand-deals">Brand Deals</option>
+</select>
+<input type="text" id="newSubFolder" placeholder="e.g. John Roberts">
+<button onclick="createSubFolder()">Add Sub-Folder</button>
+</div>
+
+<div class="admin-panel" style="margin-top: 20px;">
+<h2>Add Photo To Cloud Gallery</h2>
+<select id="category" onchange="updateSubFolderDropdown()">
+<option value="concert-shoots">Concert Shoots</option>
+<option value="wedding">Wedding</option>
+<option value="birthday">Birthday</option>
+<option value="christening">Christening</option>
+<option value="prenup">Pre Nup</option>
+<option value="preshoot">Pre Shoot</option>
+<option value="portraits">Portraits</option>
+<option value="brand-deals">Brand Deals</option>
+</select>
+<select id="subCategory">
+<option value="">-- No Sub-folder --</option>
+</select>
+<input type="file" id="photoFile" accept="image/*">
+<button onclick="addPhoto()">Upload Photo</button>
+</div>
+
+<div class="admin-panel" style="margin-top: 20px;">
+<h2>Set Page Background</h2>
+<select id="bgCategory">
+<option value="portraits-bg">Portraits</option>
+<option value="wedding-bg">Wedding</option>
+<option value="birthday-bg">Birthday</option>
+<option value="brand-deals-bg">Brand Deals</option>
+<option value="concert-bg">Concert Shoots</option>
+</select>
+<input type="file" id="bgFile" accept="image/*">
+<button onclick="setBackground()">Upload Background</button>
+</div>
+
+<div class="admin-panel" style="margin-top: 20px; border-color: lime;">
+<h2>Cloud Migration</h2>
+<p style="font-size: 0.8rem; margin-bottom: 15px;">Click to push any previously saved photos into the new Cloud Database.</p>
+<button onclick="migrateToCloud()" style="background: dimgray;">Push Local to Cloud</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="js/firebase-init.js"></script>
+
+<script>
+let subfoldersData = {
+    "concert-shoots": [
+        { name: "John Roberts", slug: "john-roberts" }
+    ]
+};
+
+// Fetch initial subfolders to populate dropdown
+if(typeof db !== 'undefined') {
+    db.ref('subfolders').get().then(snap => {
+        if (snap.exists()) {
+            subfoldersData = snap.val();
+        }
+        updateSubFolderDropdown();
+    });
+}
+
+function createSubFolder() {
+    const parent = document.getElementById("parentCategory").value;
+    const name = document.getElementById("newSubFolder").value.trim();
+    
+    if(!name) { alert("Please enter a sub-folder name!"); return; }
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    
+    if(!subfoldersData[parent]) subfoldersData[parent] = [];
+    if(subfoldersData[parent].some(sf => sf.slug === slug)){
+        alert("Sub-folder already exists!"); return;
+    }
+    
+    subfoldersData[parent].push({ name, slug });
+    
+    // Save to Firebase
+    db.ref('subfolders/' + parent).set(subfoldersData[parent])
+    .then(() => {
+        alert("Success! " + name + " added to " + parent + " in Cloud DB.");
+        document.getElementById("newSubFolder").value = "";
+        updateSubFolderDropdown();
+    })
+    .catch(e => { alert("Error saving subfolder to cloud."); console.error(e); });
+}
+
+function updateSubFolderDropdown() {
+    const parent = document.getElementById("category").value;
+    const subSelect = document.getElementById("subCategory");
+    subSelect.innerHTML = '<option value="">-- No Sub-folder --</option>';
+    if(subfoldersData[parent]) {
+        subfoldersData[parent].forEach(sf => {
+            const opt = document.createElement("option");
+            opt.value = sf.slug;
+            opt.textContent = sf.name;
+            subSelect.appendChild(opt);
+        });
+    }
+}
+updateSubFolderDropdown();
+
+function addPhoto() {
+    const parentCategory = document.getElementById("category").value;
+    const subCategory = document.getElementById("subCategory").value;
+    const fileInput = document.getElementById("photoFile");
+    const storageKey = subCategory ? parentCategory + "_" + subCategory : parentCategory;
+
+    if (fileInput.files.length === 0) { alert("Please select an image file first."); return; }
+    const file = fileInput.files[0];
+    if (file.size > 50 * 1024 * 1024) { alert("File > 50MB"); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
+            let width = img.width; let height = img.height;
+            if (width > height) {
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            } else {
+                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+            }
+            canvas.width = width; canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+            // push to Firebase
+            db.ref('photos/' + storageKey).push(compressedBase64)
+            .then(() => alert("Gallery Photo compressed and saved to Cloud Storage!"))
+            .catch(e => { alert("Error uploading to cloud. Did you set DB permissions to true?"); console.error(e); });
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+function setBackground() {
+    const category = document.getElementById("bgCategory").value;
+    const fileInput = document.getElementById("bgFile");
+    if (fileInput.files.length === 0) return alert("Select an image.");
+    const file = fileInput.files[0];
+    if (file.size > 50 * 1024 * 1024) return alert("File > 50MB.");
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
+            let width = img.width; let height = img.height;
+            if (width > height) {
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            } else {
+                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+            }
+            canvas.width = width; canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+            db.ref('site_backgrounds/' + category).set(compressedBase64)
+            .then(() => alert("Cloud Background updated! Everyone will now see this."))
+            .catch(e => { alert("Error setting bg. Check Firebase Rules."); console.error(e); });
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+function migrateToCloud() {
+    const localPhotos = JSON.parse(localStorage.getItem("photos"));
+    const localSubfolders = JSON.parse(localStorage.getItem("subfolders"));
+    const localBgs = JSON.parse(localStorage.getItem("site_backgrounds"));
+    
+    if(!localPhotos && !localSubfolders && !localBgs) {
+        alert("No local data found to migrate!"); return;
+    }
+    
+    if (localSubfolders) db.ref('subfolders').set(localSubfolders);
+    if (localBgs) db.ref('site_backgrounds').set(localBgs);
+    
+    if (localPhotos) {
+        let promises = [];
+        for(let category in localPhotos) {
+            localPhotos[category].forEach(base64 => {
+                promises.push(db.ref('photos/' + category).push(base64));
+            });
+        }
+        Promise.all(promises).then(() => {
+            alert("SUCCESS! All your old local photos were pushed to the cloud.");
+        });
+    } else {
+        alert("Migrated structure successfully.");
+    }
+}
+</script>
+</body>
+</html>
